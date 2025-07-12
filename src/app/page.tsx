@@ -8,14 +8,6 @@ import History from './components/History';
 import { Summary } from './types';
 
 
-const generateSummary = (url: string): string => {
-  return `This is a summary of the blog at ${url}. It contains important information and insights.  This is a summary of the blog at ${url}. It contains important information and insights.  This is a summary of the blog at ${url}. It contains important information and insights.`;
-};
-
-const translateToUrdu = (text: string): string => {
-  return `یہ ${text} کا اردو ترجمہ ہے۔ اس میں اہم معلومات اور بصیرت شامل ہیں۔`;
-};
-
 export default function BlogSummarizer() {
   const [url, setUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,26 +21,40 @@ export default function BlogSummarizer() {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      const summary = generateSummary(url);
-      const urduTranslation = translateToUrdu(summary);
+    try {
+    // Call your scrape API
+    const response = await fetch('api/blog', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
 
-      const newSummary: Summary = {
-        id: Date.now(),
-        url,
-        title: `Blog Summary - ${new Date().toLocaleDateString()}`,
-        summary,
-        urduTranslation,
-        timestamp: new Date().toISOString(),
-        wordCount: summary.split(' ').length
-      };
+    const data = await response.json();
 
-      setCurrentSummary(newSummary);
-      setHistory(prev => [newSummary, ...prev]);
-      setIsLoading(false);
-      setUrl('');
-    }, 2000);
-  };
+    const summary = data.summary;
+    // replace this with actual AI call later
+    const urduTranslation = data.urdu;
+
+    const newSummary: Summary = {
+      id: Date.now(),
+      url,
+      title: `Blog Summary - ${new Date().toLocaleDateString()}`,
+      summary,
+      urduTranslation,
+      timestamp: new Date().toISOString(),
+      wordCount: summary.split(' ').length
+    };
+
+    setCurrentSummary(newSummary);
+    setHistory(prev => [newSummary, ...prev]);
+    setUrl('');
+  }
+catch (error) {
+    console.error('Scraping failed:', error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const deleteFromHistory = (id: number) => {
     setHistory(prev => prev.filter(item => item.id !== id));
@@ -63,22 +69,21 @@ export default function BlogSummarizer() {
     setCurrentSummary(item);
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
-      </div>
 
-      {/* Main content */}
+  //Frontend component for the main page
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#77D6EA] via-[#43DBC0] to-[#015D49] relative overflow-hidden">
+  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    <div className="absolute -top-40 -right-40 w-80 h-80 bg-[#77D6EA] rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-[#43DBC0] rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#015D49] rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-pulse"></div>
+  </div>
+
       <div className="relative z-10 min-h-screen p-4 md:p-6 lg:p-8">
-        {/* Header */}
         <div className="max-w-6xl mx-auto mb-8">
           <div className="text-center mb-8">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-              Blog Summarizer
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-[#015D49] via-[#309784] to-[#015D49] bg-clip-text text-transparent mb-4">
+     Blog Summarizer
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               Transform lengthy blog posts into concise, digestible summaries with AI-powered insights
@@ -86,16 +91,13 @@ export default function BlogSummarizer() {
           </div>
         </div>
 
-        {/* Main container */}
         <div className="max-w-6xl mx-auto">
-          {/* URL Input Section */}
           <div className="mb-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8">
-              <UrlInput url={url} isLoading={isLoading} setUrl={setUrl} handleSubmit={handleSubmit} />
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-[#A5A9AF] p-6 md:p-8">
+     <UrlInput url={url} isLoading={isLoading} setUrl={setUrl} handleSubmit={handleSubmit} />
             </div>
           </div>
 
-          {/* Summary Display Section */}
           {currentSummary && (
             <div className="mb-8">
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8">
@@ -104,9 +106,8 @@ export default function BlogSummarizer() {
             </div>
           )}
 
-          {/* History Section */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-6 md:p-8">
-            <History
+                <History
               history={history}
               currentSummary={currentSummary}
               expandedHistory={expandedHistory}
@@ -117,19 +118,17 @@ export default function BlogSummarizer() {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="max-w-6xl mx-auto mt-12 text-center">
           <p className="text-gray-500 text-sm">
-            Powered by AI • Built with React & Tailwind CSS
+          • Built with React & Tailwind CSS
           </p>
         </div>
       </div>
 
-      {/* Floating elements */}
-      <div className="absolute top-20 left-10 w-2 h-2 bg-blue-400 rounded-full opacity-60 animate-bounce"></div>
-      <div className="absolute top-32 right-20 w-3 h-3 bg-purple-400 rounded-full opacity-40 animate-bounce" style={{ animationDelay: '0.5s' }}></div>
-      <div className="absolute bottom-20 left-20 w-2 h-2 bg-indigo-400 rounded-full opacity-50 animate-bounce" style={{ animationDelay: '1s' }}></div>
-      <div className="absolute bottom-40 right-10 w-3 h-3 bg-pink-400 rounded-full opacity-30 animate-bounce" style={{ animationDelay: '1.5s' }}></div>
-    </div>
+      <div className="absolute top-20 left-10 w-2 h-2 bg-[#309784] rounded-full opacity-60 animate-bounce"></div>
+  <div className="absolute top-32 right-20 w-3 h-3 bg-[#43DBC0] rounded-full opacity-40 animate-bounce" style={{ animationDelay: '0.5s' }}></div>
+  <div className="absolute bottom-20 left-20 w-2 h-2 bg-[#015D49] rounded-full opacity-50 animate-bounce" style={{ animationDelay: '1s' }}></div>
+  <div className="absolute bottom-40 right-10 w-3 h-3 bg-[#A5A9AF] rounded-full opacity-30 animate-bounce" style={{ animationDelay: '1.5s' }}></div>
+</div>
   );
 }
