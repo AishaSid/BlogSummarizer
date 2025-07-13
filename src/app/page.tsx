@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import UrlInput from './components/UrlInput';
 import SummaryDisplay from './components/Summary';
 import History from './components/History';
 import { Summary } from './types';
+import { supabase } from '@/lib/supabase';
+
 
 
 export default function BlogSummarizer() {
@@ -14,6 +16,16 @@ export default function BlogSummarizer() {
   const [currentSummary, setCurrentSummary] = useState<Summary | null>(null);
   const [history, setHistory] = useState<Summary[]>([]);
   const [expandedHistory, setExpandedHistory] = useState<{ [id: number]: boolean }>({});
+
+  useEffect(() => {
+  const fetchHistory = async () => {
+    const res = await fetch('/api/history');
+    const data = await res.json();
+    setHistory(data);
+  };
+  fetchHistory();
+}, []);
+
 
   const handleSubmit = async (e: React.FormEvent | React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault();
@@ -48,6 +60,16 @@ export default function BlogSummarizer() {
     setCurrentSummary(newSummary);
     setHistory(prev => [newSummary, ...prev]);
     setUrl('');
+  
+    await supabase.from('summaries').insert([
+  {
+    url,
+    title: newSummary.title,
+    summary: newSummary.summary,
+    created_at: new Date().toISOString()
+  }
+])
+  
   }
 catch (error) {
     console.error('Scraping failed:', error);
@@ -56,10 +78,19 @@ catch (error) {
   }
 };
 
-  const deleteFromHistory = (id: number) => {
-    setHistory(prev => prev.filter(item => item.id !== id));
-    if (currentSummary?.id === id) setCurrentSummary(null);
-  };
+  const deleteFromHistory = async (id: number) => {
+  // Delete from Supabase
+  await fetch('/api/history', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+
+  // Update local state
+  setHistory(prev => prev.filter(item => item.id !== id));
+  if (currentSummary?.id === id) setCurrentSummary(null);
+};
+
 
   const toggleHistoryExpansion = (id: number) => {
     setExpandedHistory(prev => ({ ...prev, [id]: !prev[id] }));
