@@ -19,7 +19,7 @@ export default function BlogSummarizer() {
 
   useEffect(() => {
   const fetchHistory = async () => {
-    const res = await fetch('/api/history');
+    const res = await fetch('api/history');
     const data = await res.json();
     setHistory(data);
   };
@@ -57,18 +57,25 @@ export default function BlogSummarizer() {
       wordCount: summary.split(' ').length
     };
 
+    console.log("URL", url);
+    console.log('New summary:', newSummary.summary);
+    const {  error } = await supabase.from('Summmaries').insert([
+  {
+    url,
+    summary: newSummary.summary,
+    created_at: new Date().toISOString()
+  }
+]);
+
+
+if (error) {
+    console.error('Supabase insert error:', error);
+} 
+
     setCurrentSummary(newSummary);
     setHistory(prev => [newSummary, ...prev]);
     setUrl('');
   
-    await supabase.from('summaries').insert([
-  {
-    url,
-    title: newSummary.title,
-    summary: newSummary.summary,
-    created_at: new Date().toISOString()
-  }
-])
   
   }
 catch (error) {
@@ -80,7 +87,7 @@ catch (error) {
 
   const deleteFromHistory = async (id: number) => {
   // Delete from Supabase
-  await fetch('/api/history', {
+  await fetch('api/history', {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ id })
