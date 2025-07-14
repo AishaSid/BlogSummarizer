@@ -3,6 +3,7 @@
 A simple web app that takes a blog URL, scrapes the content, generates a summary using AI, translates it into Urdu, and stores the results in Supabase and MongoDB. The user can also view or delete their history.
 
 ---
+Report : https://docs.google.com/document/d/1UXYNqRK5Z9qPBuyNNC8ED70_o3RbGw3nis8N69Dd6aY/edit?usp=sharing
 
 ## Installation
 
